@@ -29,6 +29,8 @@ def main(scale_factors, trials):
             capture_output=True, shell=True)
 
         for variant in ['standard', 'widetable']:
+            print(f'Using variant {variant}.')
+
             cursor = duckdb.connect()
 
             print('Loading data into DuckDB.')
@@ -46,7 +48,7 @@ def main(scale_factors, trials):
                         start_time = time.time()
                         cursor.execute(sql).fetchall()
                         end_time = time.time()
-                        results.append([scale_factor, variant, trial, query, end_time - start_time])
+                        results.append([scale_factor, variant, trial, query, round(end_time - start_time, 5)])
 
     print('Writing results.')
     with open('results/results.csv', 'w') as f:
