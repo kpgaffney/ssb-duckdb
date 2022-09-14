@@ -1,7 +1,8 @@
 import argparse
 import subprocess
-import duckdb
 import time
+
+import duckdb
 
 
 def main(scale_factors, trials):
