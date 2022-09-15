@@ -1,5 +1,4 @@
 /dbgen/build
 /.idea
-/results/numa-1/.ipynb_checkpoints
-/results/numa-2/.ipynb_checkpoints
+.ipynb_checkpoints
 
