@@ -5,6 +5,15 @@ import time
 import duckdb
 
 
+def execute(filename, cursor):
+    with open(filename, 'r') as f:
+        sql = f.read()
+        start_time = time.time()
+        cursor.execute(sql).fetchall()
+        end_time = time.time()
+        return end_time - start_time
+
+
 def main(scale_factors, trials):
     queries = ['Q1.1', 'Q1.2', 'Q1.3', 'Q2.1', 'Q2.2', 'Q2.3', 'Q3.1', 'Q3.2', 'Q3.3', 'Q3.4', 'Q4.1', 'Q4.2', 'Q4.3']
 
@@ -29,27 +38,23 @@ def main(scale_factors, trials):
             ''',
             capture_output=True, shell=True)
 
-        for variant in ['standard', 'widetable']:
+        for variant in ['standard', 'widetable', 'preselect']:
             print(f'Using variant {variant}.')
 
             cursor = duckdb.connect()
 
             print('Loading data into DuckDB.')
-            with open(f'sql/standard/load.sql', 'r') as f:
-                cursor.execute(f.read())
-            if variant == 'widetable':
-                with open(f'sql/widetable/load.sql', 'r') as f:
-                    cursor.execute(f.read())
+            execute('sql/standard/load.sql', cursor)
+            if variant == 'widetable' or variant == 'preselect':
+                execute('sql/widetable/load.sql', cursor)
+                if variant == 'preselect':
+                    execute('sql/preselect/load.sql', cursor)
 
             print('Running the benchmark.')
             for trial in range(trials):
                 for query in queries:
-                    with open(f'sql/{variant}/queries/{query}.sql', 'r') as f:
-                        sql = f.read()
-                        start_time = time.time()
-                        cursor.execute(sql).fetchall()
-                        end_time = time.time()
-                        results.append([scale_factor, variant, trial, query, round(end_time - start_time, 5)])
+                    latency = execute(f'sql/{variant}/queries/{query}.sql', cursor)
+                    results.append([scale_factor, variant, trial, query, round(latency, 5)])
 
     print('Writing results.')
     with open('results/results.csv', 'w') as f:
